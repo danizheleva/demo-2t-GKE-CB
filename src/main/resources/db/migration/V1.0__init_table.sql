@@ -1,0 +1,4 @@
+CREATE TABLE test_message (
+    id SERIAL NOT NULL PRIMARY KEY,
+    message VARCHAR(255) NOT NULL
+)

@@ -1,0 +1,18 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: demo-backend
+spec:
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: httpweb
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: demo
+    role: backend

@@ -1,0 +1,42 @@
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: demo-backend-canary
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: backend
+      labels:
+        app: demo
+        role: backend
+        env: canary
+    spec:
+      containers:
+      - name: backend
+        image: gcr.io/two-tier-app-gke/demo:v1
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "100m"
+        imagePullPolicy: Always
+        readinessProbe:
+          httpGet:
+            path: /hello
+            port: 8080
+      - name: cloud-sql-proxy    
+        image: gcr.io/cloudsql-docker/gce-proxy:1.17
+        imagePullPolicy: Always  
+        command:
+          - "/cloud_sql_proxy"
+          # If connecting from a VPC-native GKE cluster, you can use the
+          # following flag to have the proxy connect over private IP
+          # - "-ip_address_types=PRIVATE"
+          # Replace DB_PORT with the port the proxy should listen on
+          # Defaults: MySQL: 3306, Postgres: 5432, SQLServer: 1433
+          - "-instances=two-tier-app-gke:us-central1:demo-database=tcp:0.0.0.0:5432"
+        securityContext:
+          # The default Cloud SQL proxy image runs as the
+          # "nonroot" user and group (uid: 65532) by default.
+          runAsNonRoot: true
+      # [END cloud_sql_proxy_k8s_container]

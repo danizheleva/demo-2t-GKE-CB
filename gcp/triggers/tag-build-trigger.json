@@ -1,0 +1,15 @@
+{
+  "github": {
+    "push": {
+      "tag": ".*"
+    },
+    "owner": "danizheleva",
+    "name": "demo-2T-GKE"
+  },
+  "description": "Deploys to procudtion when a new tag is pushed on master",
+  "substitutions": {
+    "_CLOUDSDK_COMPUTE_ZONE": "us-central1-b",
+    "_CLOUDSDK_CONTAINER_CLUSTER": "gke-deploy-cluster"
+  },
+  "filename": "gcp/builder/cloudbuild-prod.yaml"
+}

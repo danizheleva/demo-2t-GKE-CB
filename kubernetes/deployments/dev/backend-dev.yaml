@@ -1,0 +1,26 @@
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: demo-backend-dev
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: backend
+      labels:
+        app: demo
+        role: backend
+        env: dev
+    spec:
+      containers:
+      - name: backend
+        image: gcr.io/two-tier-app-gke/demo:v1
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "100m"
+        imagePullPolicy: Always
+        readinessProbe:
+          httpGet:
+            path: /hello
+            port: 8080
