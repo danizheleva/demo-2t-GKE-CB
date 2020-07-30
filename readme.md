@@ -97,6 +97,7 @@ branch name
 2. Push to master branch - Creates a canary release
 3. Push of a tag to master branch - deploys the code to production namespace in GKE
 
+> *NOTE:* Change the values under github.owner and github.name within all the trigger.json files (in /gcp folder)
 ```
     curl -X POST \
         https://cloudbuild.googleapis.com/v1/projects/${PROJECT}/triggers \
