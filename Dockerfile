@@ -1,6 +1,5 @@
 FROM gcr.io/google-appengine/openjdk
 VOLUME /tmp
-RUN chmod +x /build/cloud_sql_proxy
 RUN mkdir /application
 COPY . /application
 WORKDIR /application

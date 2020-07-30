@@ -11,5 +11,5 @@
     "_CLOUDSDK_COMPUTE_ZONE": "us-central1-b",
     "_CLOUDSDK_CONTAINER_CLUSTER": "gke-deploy-cluster"
   },
-  "filename": "../builder/cloudbuild-canary.yaml"
+  "filename": "gcp/builder/cloudbuild-canary.yaml"
 }
