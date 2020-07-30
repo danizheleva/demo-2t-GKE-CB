@@ -80,11 +80,17 @@ sed -i 's|gcr.io/two-tier-app-gke/demo:.*|gcr.io/$PROJECT_ID/demo:${_USER}-${_VE
 
 The `two-tier-app-gke` path here points to the project name. Change this to your projec name in the 4 build files (under /builder directory)
 
+### Create repo mapping with Cloud Build & GitHub
+1. In the GCP UI navigate to Cloud Build --> Triggers --> Connect Repository.
+2. Select Github 
+3. Link your GitHub account and point to correct repository.
+4. Connect (& Skip the first trigger it creates for you)
 
 ### Setup triggers
-Cloud Build triggers watch the source repository ang build the application when the required conditions
-are met. Here we use 3 triggers which are stored within the gcp/triggers folder. Use the scripts below 
-to deploy them. 
+Cloud Build triggers which watch the source repository ang build the application when the required conditions
+are met. Here we use 3 triggers which are stored within the gcp/triggers folder. To deploy them execute the 3 API calls 
+bellow within folder gcp/triggers. If doing from Cloud Shell you will need to pull this repo into the shell so that you 
+can access the files.
 
 1. Push to a branch - creates a new cluster within the GKE service with the cluster name matching the 
 branch name

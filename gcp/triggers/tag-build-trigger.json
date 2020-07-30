@@ -4,7 +4,7 @@
       "tag": ".*"
     },
     "owner": "danizheleva",
-    "name": "demo-2T-GKE"
+    "name": "demo-2T-GKE-CB"
   },
   "description": "Deploys to procudtion when a new tag is pushed on master",
   "substitutions": {
