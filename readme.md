@@ -124,6 +124,12 @@ Review triggers are setup on the [Build Triggers Page](https://console.cloud.goo
 
 > *NOTE:* Having issues connecting the database to the application pod. Issue seems to be due to Cloud SQL proxy. 
 > Application cannot build (as part of the Cloud Build step) as it cannot connect to the database.
+>
+> Error Seen in Cloud Build:
+> 
+>``The Application Default Credentials are not available. They are available if running in Google Compute Engine. 
+Otherwise, the environment variable GOOGLE_APPLICATION_CREDENTIALS must be defined pointing to a file defining the 
+credentials. See https://developers.google.com/accounts/docs/application-default-credentials for more information.``
 
 This demo uses a postgreSQL database running on Cloud SQL which you have to deploy. Once the app starts, 
 flyway will do the rest (create table + populate some data).
