@@ -3,11 +3,24 @@
 This repository holds scripts demonstrating how to use Google Cloud Build as a Continuous Deployment 
 system to deploy a SpringBoot application to GKE.
 
+## Architecture
+
+![](./media/arch.png)
+
+#### How it works
+There are triggers set up within Google Cloud Build which watch the GitHub repository. When a code push activates one of
+the triggers, the relevant cloudbuild.yaml file used to submit a build to Cloud Build. This then deploys the application
+to the relevant GKE namespace.
+
+- Push to master --> cloudbuild-canary.yaml --> deploy a second pod to Production
+- Push a tag --> cloudbuild-production.yaml --> deploy a new production version
+- Push to a branch --> cloudbuild-dev.yaml --> deploy a new namespace
+
 To set up CD follow these commands from the gcp cloud shell:
 
-### Setup GCP environment
+## Setting it up 
 
-### Set Variables
+### Configure GCP environment
 
 ```
     export PROJECT=$(gcloud info --format='value(config.project)')
@@ -100,9 +113,13 @@ branch name
 
 Review triggers are setup on the [Build Triggers Page](https://console.cloud.google.com/gcr/triggers) 
 
-### Create Databse
+### Create Database (WIP)
+
+> *NOTE:* Having issues connecting the database to the application pod. Issue seems to be due to Cloud SQL proxy. 
+> Application cannot build (as part of the Cloud Build step) as it cannot connect to the database.
+
 This demo uses a postgreSQL database running on Cloud SQL which you have to deploy. Once the app starts, 
-flyway will do the rest (create tabe + populate some data).
+flyway will do the rest (create table + populate some data).
 
 Set up database: 
 ```
@@ -130,81 +147,4 @@ gcloud builds submit \
     --substitutions=_VERSION=[SOME-VERSION],_USER=$(whoami),_CLOUDSDK_COMPUTE_ZONE=${ZONE},_CLOUDSDK_CONTAINER_CLUSTER=${CLUSTER} .
 ```
 
-## Deploy Mechanisms
 
-## Deploy Branches to Namespaces
-
-Development branches are a set of environments your developers use to test their code changes before submitting them for integration 
-into the live site. These environments are scaled-down versions of your application, but need to be deployed using the same mechanisms 
-as the live environment.
-
-### Create a development branch
-
-To create a development environment from a feature branch, you can push the branch to the Git server and let Cloud Build deploy your environment. 
-
-1. Create a development branch and push it to the Git server.
-
-    ```
-    git checkout -b new-feature
-    ```
-
-2. Modify the source code.
-3. Commit and push your changes. This will kick off a build of your development environment.
-4. Navigate to the [Build History Page](https://console.cloud.google.com/cloud-build/builds) user interface where you can see that your build started 
-for the new branch 
-5. Click into the build to review the details of the job
-6. Retrieve the external IP for the production services. (It can take several minutes before you see the load balancer external IP address.)
-    ```
-    kubectl get service demo-backend -n new-feature
-    ```
-7. Navigate to http://[external-ip]/hello
-
-### Deploy Master to canary
-
-Now that you have verified that your app is running your latest code in the development environment, deploy that code to the canary environment.
-
-1. Merge your feature branch to master
-
-    ```
-    git checkout master
-
-    git merge new-feature
-
-    git push gcp master
-    ```
-
-2. Navigate to the [Build History Page](https://console.cloud.google.com/gcr/builds) user interface where you can see that your build started for 
-the master branch. Click into the build to review the details of the job
-3. Once complete, you can check the service URL to ensure that some of the traffic is being served by your new version. You should see about 1 in 5 
-requests returning the new version.
-    ```
-    export FRONTEND_SERVICE_IP=$(kubectl get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" --namespace=production services gceme-frontend)
-
-    while true; do curl http://$FRONTEND_SERVICE_IP/version; sleep 1;  done
-    ```
-
-### Deploy Tags to production
-
-Now that your canary release was successful and you haven't heard any customer complaints, you can deploy to the rest of your production fleet. 
-
-1. Tag the master branch 
-    ```
-    git tag v2.0.0
-
-    git push gcp v2.0.0
-    ```
-
-2. Review the job on the the [Build History Page](https://console.cloud.google.com/gcr/builds) user interface where you can see that your build started 
-for the v2.0.0 tag. Click into the build to review the details of the job
-3. Once complete, you can check the service URL to ensure that all of the traffic is being served by your new version.
-
-    ```
-    export FRONTEND_SERVICE_IP=$(kubectl get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" --namespace=production services demo-backend)
-
-    while true; do curl http://$FRONTEND_SERVICE_IP/version; sleep 1;  done
-    ```
-
-### Testing 
-
-GET Request to "/hello" -> "Hello World"
-GET Request to "/hello/{id}" -> "Hello" + message from database (where id = 1,2 or3)
