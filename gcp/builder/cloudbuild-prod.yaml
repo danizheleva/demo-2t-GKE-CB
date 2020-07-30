@@ -40,7 +40,7 @@ steps:
           gcloud container clusters get-credentials "$${CLUSTER}" \
             --project "$${PROJECT}" \
             --zone "$${ZONE}"  
-          sed -i 's|gcr.io/two-tier-app-gke/demo:.*|gcr.io/$PROJECT_ID/demo:$TAG_NAME|' ./kubernetes/deployments/prod/*.yaml
+          sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo:$TAG_NAME|' ./kubernetes/deployments/prod/*.yaml
           
           kubectl get ns production || kubectl create ns production
           kubectl apply --namespace production --recursive -f kubernetes/deployments/prod

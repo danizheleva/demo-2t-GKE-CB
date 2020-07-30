@@ -38,7 +38,7 @@ steps:
           gcloud container clusters get-credentials "$${CLUSTER}" \
             --project "$${PROJECT}" \
             --zone "$${ZONE}"  
-          sed -i 's|gcr.io/two-tier-app-gke/demo:.*|gcr.io/$PROJECT_ID/demo:${_USER}-${_VERSION}|' ./kubernetes/deployments/dev/*.yaml
+          sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo:${_USER}-${_VERSION}|' ./kubernetes/deployments/dev/*.yaml
           
           kubectl get ns ${_USER} || kubectl create ns ${ex}
           kubectl apply --namespace ${_USER} --recursive -f kubernetes/deployments/dev

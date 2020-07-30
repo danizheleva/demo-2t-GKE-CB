@@ -39,7 +39,7 @@ steps:
             --project "$${PROJECT}" \
             --zone "$${ZONE}"  
          
-          sed -i 's|gcr.io/two-tier-app-gke/demo:.*|gcr.io/$PROJECT_ID/demo:${SHORT_SHA}|' ./kubernetes/deployments/canary/*.yaml
+          sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo:${SHORT_SHA}|' ./kubernetes/deployments/canary/*.yaml
           
           kubectl apply --namespace production --recursive -f kubernetes/deployments/canary
           kubectl apply --namespace production --recursive -f kubernetes/services
