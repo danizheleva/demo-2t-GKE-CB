@@ -39,7 +39,7 @@ steps:
           
           gcloud container clusters get-credentials "$${CLUSTER}" \
             --project "$${PROJECT}" \
-            --zone "$${ZONE}"  
+            --zone "europe-west1-b"  
           sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo:$TAG_NAME|' ./kubernetes/deployments/prod/*.yaml
           
           kubectl get ns production || kubectl create ns production
