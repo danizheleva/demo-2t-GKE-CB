@@ -70,6 +70,12 @@ gcloud projects add-iam-policy-binding $PROJECT \
 
 ## Usage
 
+1. Copy all files under this (binauthz-attestation) folder into your project gcp folder.
+2. Set up SonarQube on your GitHub project following [these instructions](https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/sonarqube). Once set up 
+you will be given a **project key** and an **organisation key**. Note these down.
+3. Add the project key into the ``create_binauthz_attestation.sh`` file (line 32 which has the Sonar Qube API).
+4. Build the ``binauthz-attestation:latest`` image using the ``cloudbuild.yaml`` file in this folder.
+
 ### KMS Key-based Signing (Recommended)
 
 1.  Create a key ring and a key for asymmetric signing using
