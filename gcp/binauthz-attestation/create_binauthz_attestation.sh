@@ -29,7 +29,7 @@ docker pull "${args[artifact_url]}"
 IMAGE_AND_DIGEST="$(docker inspect "${args[artifact_url]}" --format='{{index .RepoDigests 0}}')"
 echo "$IMAGE_AND_DIGEST"
 
-RESULT="$(curl https://sonarcloud.io/api/qualitygates/project_status?projectKey=ilgatnau_demo-2T-AppEngine | jq -r .projectStatus.status)"
+RESULT="$(curl https://sonarcloud.io/api/qualitygates/project_status?projectKey=danizheleva_demo-2T-GKE-CB | jq -r .projectStatus.status)"
 
 if [RESULT == 'OK']; then
 
