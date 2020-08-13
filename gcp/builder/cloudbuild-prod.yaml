@@ -31,7 +31,7 @@ steps:
     - '-Dsonar.projectKey=danizheleva_demo-2T-GKE-CB'
     - '-Dsonar.organization=danizheleva'
     - '-Dsonar.sources=./src/main/java'
-    # - '-Dsonar.java.binaries=./target/classes'
+    - '-Dsonar.java.binaries=./target'
 
 ### Attest
   - id: 'attest'
