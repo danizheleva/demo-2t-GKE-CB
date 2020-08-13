@@ -13,8 +13,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class DemoApplication {
 
-    @Autowired
-    private DemoTableRepository demoTableRepository;
+    // @Autowired
+    // private DemoTableRepository demoTableRepository;
 
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
@@ -25,11 +25,11 @@ public class DemoApplication {
       return "Hello world";
     }
 
-    @GetMapping("hello/{id}")
-    public String helloFromDatabase(@PathVariable(name="id") Long id){
-        DemoTable table = demoTableRepository.findById(id).get();
-        String message = table.getMessage();
-        return "Hello " + message;
-    }
+    // @GetMapping("hello/{id}")
+    // public String helloFromDatabase(@PathVariable(name="id") Long id){
+    //     DemoTable table = demoTableRepository.findById(id).get();
+    //     String message = table.getMessage();
+    //     return "Hello " + message;
+    // }
 
 }

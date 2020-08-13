@@ -40,19 +40,18 @@ gcloud services enable sourcerepo.googleapis.com --async
 #### Create Container Cluster
 
 ```
-    gcloud container clusters create ${CLUSTER} \
-    --project=${PROJECT} \
-    --zone=${ZONE} \
-    --quiet
-
+gcloud container clusters create ${CLUSTER} \
+--project=${PROJECT} \
+--zone=${ZONE} \
+--quiet
 ```
 
 #### Get Credentials
 
 ```
-    gcloud container clusters get-credentials ${CLUSTER} \
-    --project=${PROJECT} \
-    --zone=${ZONE}
+gcloud container clusters get-credentials ${CLUSTER} \
+--project=${PROJECT} \
+--zone=${ZONE}
 ```
 
 #### Give Cloud Build Rights
@@ -69,16 +68,6 @@ gcloud projects add-iam-policy-binding ${PROJECT} \
     --role=roles/container.developer
 
 ```
-
-### Edit build files
-During the deploy step of the build process the image tag is dynamically changed to point to the newly built image. 
-This is done through a `sed` command which looks like this: 
-
-```
-sed -i 's|gcr.io/two-tier-app-gke/demo:.*|gcr.io/$PROJECT_ID/demo:${_USER}-${_VERSION}|' ./kubernetes/deployments/dev/*.yaml
-```
-
-The `two-tier-app-gke` path here points to the project name. Change this to your projec name in the 4 build files (under /builder directory)
 
 ### Create repo mapping with Cloud Build & GitHub
 1. In the GCP UI navigate to Cloud Build --> Triggers --> Connect Repository.
