@@ -23,7 +23,7 @@ steps:
           docker push gcr.io/$PROJECT_ID/demo:$TAG_NAME
 
 ### Sonarqube
-  - id: 'sonarqube'
+  - id: 'run-sonarqube'
     name: 'gcr.io/$PROJECT_ID/sonar-scanner:latest'
     args:
     - '-Dsonar.host.url=https://sonarcloud.io'
@@ -34,13 +34,14 @@ steps:
     - '-Dsonar.java.binaries=./src/main/java'
 
 ### Attest
-  - id: 'attest'
-    name: 'gcr.io/$PROJECT_ID/demo:$TAG_NAME'
+
+  - id: 'attest-sonarqube'
+    name: 'gcr.io/$PROJECT_ID/binauthz-attestation:latest'
     args:
       - '--artifact-url'
       - 'gcr.io/$PROJECT_ID/demo:$TAG_NAME'
       - '--attestor'
-      - 'projects/$PROJECT_ID/attestors/ATTESTOR_NAME'
+      - 'projects/$PROJECT_ID/attestors/cluster-approved'
       - '--keyversion'
       - 'projects/$PROJECT_ID/locations/europe-west1/keyRings/mykey/cryptoKeys/asymsigningkey/cryptoKeyVersions/1'
 
