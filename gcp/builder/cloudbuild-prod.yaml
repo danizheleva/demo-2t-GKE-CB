@@ -43,7 +43,7 @@ steps:
       - '--attestor'
       - 'projects/$PROJECT_ID/attestors/cluster-approved'
       - '--keyversion'
-      - 'projects/$PROJECT_ID/locations/europe-west1/keyRings/mykey/cryptoKeys/asymdecryptkey/cryptoKeyVersions/1'
+      - 'projects/gkebinaryattz/locations/global/keyRings/my-binauthz-keyring/cryptoKeys/my-binauthz-kms-key-name/cryptoKeyVersions/1'
 
 ### Deploy
   - id: 'deploy'

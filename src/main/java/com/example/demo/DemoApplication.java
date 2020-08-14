@@ -26,7 +26,7 @@ public class DemoApplication {
     }
 
 
-    @GetMapping("/")
+    @GetMapping("")
     public String home() {
       return "You've hit the homepage";
     }
