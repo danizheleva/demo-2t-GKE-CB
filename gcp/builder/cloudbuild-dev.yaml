@@ -51,6 +51,7 @@ steps:
       - 'CLOUDSDK_COMPUTE_ZONE=${_CLOUDSDK_COMPUTE_ZONE}'
       - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLOUDSDK_CONTAINER_CLUSTER}'
       - 'KUBECONFIG=/kube/config'
+      - 'DIGEST3=$(gcloud container images describe gcr.io/gkebinaryattz/demo:${BRANCH_NAME}-${SHORT_SHA} --format="value(image_summary.digest)")'
     entrypoint: 'bash'
     args:
       - '-c'
@@ -76,7 +77,7 @@ steps:
           echo digest2 is $${DIGEST2}
           echo digest2 is "$${DIGEST2}""
 
-          sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@$DIGEST|' ./kubernetes/deployments/dev/*.yaml
+          sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@$${DIGEST}|' ./kubernetes/deployments/dev/*.yaml
                     
           kubectl get ns ${BRANCH_NAME} || kubectl create ns ${BRANCH_NAME}
           kubectl apply --namespace ${BRANCH_NAME} --recursive -f kubernetes/deployments/dev
