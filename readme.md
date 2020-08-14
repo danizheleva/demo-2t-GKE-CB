@@ -146,7 +146,7 @@ will take a couple of minutes
 ```bash
 # Create cluster
 gcloud container clusters create ${CLUSTER} \
---enable-binauthz 
+--enable-binauthz \
 --project=${PROJECT} \
 --zone=${ZONE} \
 --quiet
