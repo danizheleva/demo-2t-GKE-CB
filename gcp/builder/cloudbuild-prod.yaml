@@ -60,11 +60,11 @@ steps:
           PROJECT=$$(gcloud config get-value core/project)
           ZONE=$$(gcloud config get-value compute/zone)
           
-          gcloud container clusters get-credentials gke-deploy-cluster-priv \
+          gcloud container clusters get-credentials "$${CLUSTER}" \
             --project "$${PROJECT}" \
-            --zone "europe-west1-b"  
+            --zone "$${ZONE}"  
 
-          DIGEST=$(gcloud container images describe gcr.io/gkebinaryattz/demo:${TAG_NAME} --format="value(image_summary.digest)")
+          DIGEST=$(gcloud container images describe gcr.io/gkebinaryattz/demo@${TAG_NAME} --format="value(image_summary.digest)")
 
           sed -i "s|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@$${DIGEST}|" ./kubernetes/deployments/prod/*.yaml
                   
