@@ -32,11 +32,13 @@ echo "IMAGE_AND_DIGEST: $IMAGE_AND_DIGEST"
 RESULT="$(curl https://sonarcloud.io/api/qualitygates/project_status?projectKey=danizheleva_demo-2T-GKE-CB | jq -r .projectStatus.status)"
 EXPECTED="OK"
 
+echo $RESULT
+
 if [ "$RESULT" = "$EXPECTED" ]; then
 
     if [ -n "${args[pgp_key_fingerprint]}" ]; then
         echo "in if statement loop"
-        
+
         if [ -z "$PGP_SECRET_KEY" ]; then
             die "PGP_SECRET_KEY environment variable is required if providing the PGP signing key through an environment variable. Please consult the documentation for more information."
         fi
