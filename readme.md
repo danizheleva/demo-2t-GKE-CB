@@ -1,60 +1,167 @@
 # Spring Boot GKE deployment
 
-This repository holds scripts demonstrating how to use Google Cloud Build as a Continuous Deployment 
-system to deploy a SpringBoot application to GKE.
+This repository demonstrates how to use Google Cloud Build as a Continuous Deployment system to deploy 
+a SpringBoot application to GKE using [Binary Authorization](https://cloud.google.com/binary-authorization/docs) 
+to ensure the application image meets necessary requirements.
 
 ## Architecture
 
 ![](./media/arch.png)
 
 #### How it works
-There are triggers set up within Google Cloud Build which watch the GitHub repository. When a code push activates one of
-the triggers, the relevant cloudbuild.yaml file used to submit a build to Cloud Build. This then deploys the application
-to the relevant GKE namespace.
+A Google Cloud Build Trigger is set up to monitor code pushes to this branch. When code is pushed to this branch the
+trigger activates the /gcp/builder/cloudbuild-dev.yaml. A SonarQube analysis is performed on the code, if it passes 
+the built image is marked with an attestation and the image is deployed to Google Kubernetes Engine. If the attestation
+is not achieved, deployment is not permitted.
 
-- Push to master --> cloudbuild-canary.yaml --> deploy a second pod to Production
-- Push a tag --> cloudbuild-production.yaml --> deploy a new production version
-- Push to a branch --> cloudbuild-dev.yaml --> deploy a new namespace
+1. Prepare resources for Binary Authorization
+    - Create Cryptographic Keys
+    - Create Attestor and attach Key
+    - Create Policy and attach Attestor
+    - Give Cloud Builder service account necessary access rights
+2. Create GKE cluster
+    - enable Binary Authorization and attach policy
+3. Configure Cloud Build  
 
 To set up CD follow these commands from the gcp cloud shell:
 
-## Setting it up 
+# Set up steps
 
-### Configure GCP environment
+## Prepare environment
 
-```
-    export PROJECT=$(gcloud info --format='value(config.project)')
-    export CLUSTER=gke-deploy-cluster
-    export ZONE=us-central1-a
+#### Configure GCP environment
 
-    gcloud config set compute/zone $ZONE
+```bash
+PROJECT=$(gcloud info --format='value(config.project)')
+CLUSTER=gke-deploy-cluster
+ZONE=europe-west1-b
+PROJECT_NUMBER=$(gcloud projects list --filter="$PROJECT" --format="value(PROJECT_NUMBER)")
+
+
+gcloud config set compute/zone $ZONE
 ```
 
 #### Enable Services
-```
+```bash
 gcloud services enable container.googleapis.com --async
 gcloud services enable containerregistry.googleapis.com --async
 gcloud services enable cloudbuild.googleapis.com --async
 gcloud services enable sourcerepo.googleapis.com --async
 ```
+
+## 1) Binary Authorization
+
+We are adding a custom build step for signing and uploading Binary Authorization Attestations.
+
+## Background
+
+Binary Authorization (Binauthz) is a Cloud product that enforces deploy-time constraints on applications. 
+Its GKE integration allows users to enforce that containers deployed to a Kubernetes cluster are 
+cryptographically attested by a trusted authority.
+
+NOTE: This build step assumes some familiarity with Binary Authorization, including how to set up an 
+Binary Authorization enforcement policy with an Attestor on a GKE cluster.
+
+To learn more:
+
+-   [A general introduction to Binary Authorization](https://cloud.google.com/binary-authorization/)
+-   [An introductory codelab](https://codelabs.developers.google.com/codelabs/cloud-binauthz-intro/index.html#0)
+
+### Cryptographic Keys
+
+A cryptographic key is required to ensure that only authorised parties can attest a container image.
+Using a KMS Key-based Signing recommended. The Public key is attached to the attestor, while the private 
+key is used to sign the attestation. 
+
+1.  Create a key ring and a key for asymmetric signing using
+    [these instructions](https://cloud.google.com/kms/docs/creating-asymmetric-keys#create_an_asymmetric_signing_keys) 
+    making sure you choose Asymmetric Sign as the key purpose when you create the key.
+
+
+### Attestor
+
+An attestor is a GCP resource that Binary Authorization uses to verify the attestation at container image deploy time.
+Mor information can be found in docs [here](https://cloud.google.com/binary-authorization/docs/key-concepts#attestors).
+
+1.  Create an attestor following Googles instructions 
+    [here](https://cloud.google.com/binary-authorization/docs/creating-attestors-cli) making sure to look at the 
+    [PKIX](https://cloud.google.com/binary-authorization/docs/creating-attestors-cli#pkix-cloud-kms) documentation
+    when so you attach the key created from the last step.
+
+> *NOTE:* This step can also be done using the [UI](https://cloud.google.com/binary-authorization/docs/creating-attestors-console)
+
+### Policy
+
+A policy is a set of rules that govern the deployment of one or more container images.
+
+1. Create a policy using instructions [here](https://cloud.google.com/binary-authorization/docs/configuring-policy-cli) 
+    and the attestor from the previous step.
+
+You want to set `evaluationMode=REQUIRE_ATTESTATION`, `ATTESTOR=[name-of-attestor-from-above-step]` and 
+`enforcementMode=ENFORCED_BLOCK_AND_AUDIT_LOG`.
+
+> *NOTE:* This step can also be done using the [UI](https://cloud.google.com/binary-authorization/docs/configuring-policy-console)
+
+### Access
+
+To use this build step, the Cloud Build service account needs the following IAM roles:
+
+-   Binary Authorization Attestor Viewer
+    -   `roles/binaryauthorization.attestorsViewer`
+-   Cloud KMS CryptoKey Decrypter (if providing KMS-encrypted PGP key through
+    secret environment variable)
+    -   `roles/cloudkms.cryptoKeyDecrypter`
+-   Cloud KMS CryptoKey Signer/Verifier (if using key in KMS to sign
+    attestation)
+    -   `roles/cloudkms.signerVerifier`
+-   Container Analysis Notes Attacher
+    -   `roles/containeranalysis.notes.attacher`
+
+The following commands can be used to add the roles to your project's Cloud Build Service Account:
+
+```bash
+# Add Binary Authorization Attestor Viewer role to Cloud Build Service Account
+gcloud projects add-iam-policy-binding $PROJECT \
+  --member serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
+  --role roles/binaryauthorization.attestorsViewer
+
+# Add Cloud KMS CryptoKey Signer/Verifier role to Cloud Build Service Account (KMS-based Signing)
+gcloud projects add-iam-policy-binding $PROJECT \
+  --member serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
+  --role roles/cloudkms.signerVerifier
+
+# Add Container Analysis Notes Attacher role to Cloud Build Service Account
+gcloud projects add-iam-policy-binding $PROJECT \
+  --member serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
+  --role roles/containeranalysis.notes.attacher
+```
+
+## 2) Google Kubernetes Engine
+
 #### Create Container Cluster
 
-```
+We are going to create a GKE cluster with Binary Authorization enabled. Creating the cluster
+will take a couple of minutes
+
+```bash
+# Create cluster
 gcloud container clusters create ${CLUSTER} \
+--enable-binauthz 
 --project=${PROJECT} \
 --zone=${ZONE} \
 --quiet
-```
 
-#### Get Credentials
+# Check cluster is created
+gcloud container clusters list \
+    --zone ${ZONE}
 
-```
+# Get Credentials
 gcloud container clusters get-credentials ${CLUSTER} \
 --project=${PROJECT} \
 --zone=${ZONE}
 ```
 
-#### Give Cloud Build Rights
+#### Give Cloud Build Rights to the cluster
 
 For `kubectl` commands against GKE youll need to give Cloud Build Service Account container.developer role access 
 on your clusters [details](https://github.com/GoogleCloudPlatform/cloud-builders/tree/master/kubectl).
@@ -69,84 +176,28 @@ gcloud projects add-iam-policy-binding ${PROJECT} \
 
 ```
 
-### Create repo mapping with Cloud Build & GitHub
+## Set up Cloud Build & GitHub
+
 1. In the GCP UI navigate to Cloud Build --> Triggers --> Connect Repository.
 2. Select Github 
 3. Link your GitHub account and point to correct repository.
 4. Connect (& Skip the first trigger it creates for you)
 
-### Setup triggers
-Cloud Build triggers which watch the source repository ang build the application when the required conditions
-are met. Here we use 3 triggers which are stored within the gcp/triggers folder. To deploy them execute the 3 API calls 
-bellow within folder gcp/triggers. If doing from Cloud Shell you will need to pull this repo into the shell so that you 
-can access the files.
-
-1. Push to a branch - creates a new cluster within the GKE service with the cluster name matching the 
-branch name
-2. Push to master branch - Creates a canary release
-3. Push of a tag to master branch - deploys the code to production namespace in GKE
+#### Setup triggers
+Cloud Build triggers which watch the source repository and build the application when the required conditions
+are met. We are going to set up one trigger to monitor the current branch in GitHub. 
 
 > *NOTE:* Change the values under github.owner and github.name within all the trigger.json files (in /gcp folder)
 ```
-    curl -X POST \
-        https://cloudbuild.googleapis.com/v1/projects/${PROJECT}/triggers \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
-        --data-binary @branch-build-trigger.json
+cd ./gcp/triggers
 
-    curl -X POST \
-        https://cloudbuild.googleapis.com/v1/projects/${PROJECT}/triggers \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
-        --data-binary @master-build-trigger.json
-
-    curl -X POST \
-        https://cloudbuild.googleapis.com/v1/projects/${PROJECT}/triggers \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
-        --data-binary @tag-build-trigger.json
+curl -X POST \
+    https://cloudbuild.googleapis.com/v1/projects/${PROJECT}/triggers \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $(gcloud auth application-default print-access-token)" \
+    --data-binary @branch-build-trigger.json
 ```
 
 Review triggers are setup on the [Build Triggers Page](https://console.cloud.google.com/gcr/triggers) 
-
-### Create Database (WIP)
-
-> *NOTE:* Having issues connecting the database to the application pod. Issue seems to be due to Cloud SQL proxy. 
-> Application cannot build (as part of the Cloud Build step) as it cannot connect to the database.
->
-> Error Seen in Cloud Build:
-> 
->``The Application Default Credentials are not available. They are available if running in Google Compute Engine. 
-Otherwise, the environment variable GOOGLE_APPLICATION_CREDENTIALS must be defined pointing to a file defining the 
-credentials. See https://developers.google.com/accounts/docs/application-default-credentials for more information.``
-
-This demo uses a postgreSQL database running on Cloud SQL which you have to deploy. Once the app starts, 
-flyway will do the rest (create table + populate some data).
-
-Set up database: 
-```
-gcloud sql instances create <DATABASE-NAME> --tier=db-n1-standard-1 --region=us-central1
-
-gcloud sql users set-password root --host=% --instance <DATABASE-NAME> --password <PASSWORD>
-
-gcloud sql databases create <TABLE-NAME> --instance=<DATABSE-NAME>
-```
-Get your database connection name:
-
-```
-gcloud sql instances describe test-instance-inventory-management | grep connectionName
-```
-
-#### Build & Deploy of local content (optional)
-
-The following submits a build to Cloud Build and deploys the results to a user's namespace. (Note: username must consist of lower case 
-alphanumeric characters or '-', and must start and end with an alphanumeric character (e.g. 'my-name',  or '123-abc', regex used for 
-validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?'))
-
-```
-gcloud builds submit \
-    --config gcp/builder/cloudbuild-local.yaml \
-    --substitutions=_VERSION=[SOME-VERSION],_USER=$(whoami),_CLOUDSDK_COMPUTE_ZONE=${ZONE},_CLOUDSDK_CONTAINER_CLUSTER=${CLUSTER} .
-```
 
 

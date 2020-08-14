@@ -8,7 +8,7 @@
   },
   "description": "Creates a new cluster in GKE and deploys the branch changes",
   "substitutions": {
-    "_CLOUDSDK_COMPUTE_ZONE": "us-central1-b",
+    "_CLOUDSDK_COMPUTE_ZONE": "europe-west1",
     "_CLOUDSDK_CONTAINER_CLUSTER": "gke-deploy-cluster"
   },
   "filename": "gcp/builder/cloudbuild-dev.yaml"
