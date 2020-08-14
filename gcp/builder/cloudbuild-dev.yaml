@@ -20,6 +20,30 @@ steps:
       - '-c'
       - |
           docker push gcr.io/$PROJECT_ID/demo:${BRANCH_NAME}-${SHORT_SHA}
+
+### Sonarqube
+  - id: 'run-sonarqube'
+    name: 'gcr.io/$PROJECT_ID/sonar-scanner:latest'
+    args:
+    - '-Dsonar.host.url=https://sonarcloud.io'
+    - '-Dsonar.login=a60eb05b0aa82e81873bb247ad77724d01bf6a2d'
+    - '-Dsonar.projectKey=danizheleva_demo-2T-GKE-CB'
+    - '-Dsonar.organization=danizheleva'
+    - '-Dsonar.sources=./src/main/java'
+    - '-Dsonar.java.binaries=./src/main/java'
+    - '-Dsonar.branch.name=${BRANCH_NAME}'
+
+### Attest
+  - id: 'attest-sonarqube'
+    name: 'gcr.io/$PROJECT_ID/binauthz-attestation:latest'
+    args:
+      - '--artifact-url'
+      - 'gcr.io/$PROJECT_ID/demo:$BRANCH_NAME-$SHORT_SHA'
+      - '--attestor'
+      - 'projects/$PROJECT_ID/attestors/cluster-approved'
+      - '--keyversion'
+      - 'projects/gkebinaryattz/locations/global/keyRings/my-binauthz-keyring/cryptoKeys/my-binauthz-kms-key-name/cryptoKeyVersions/1'
+
 ### Deploy
   - id: 'deploy'
     name: 'gcr.io/cloud-builders/gcloud'
@@ -27,6 +51,7 @@ steps:
       - 'CLOUDSDK_COMPUTE_ZONE=${_CLOUDSDK_COMPUTE_ZONE}'
       - 'CLOUDSDK_CONTAINER_CLUSTER=${_CLOUDSDK_CONTAINER_CLUSTER}'
       - 'KUBECONFIG=/kube/config'
+      - 'DIGEST3=$(gcloud container images describe gcr.io/gkebinaryattz/demo:${BRANCH_NAME}-${SHORT_SHA} --format="value(image_summary.digest)")'
     entrypoint: 'bash'
     args:
       - '-c'
@@ -37,11 +62,12 @@ steps:
           
           gcloud container clusters get-credentials "$${CLUSTER}" \
             --project "$${PROJECT}" \
-            --zone "$${ZONE}"  
-          
-          
-          sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo:${BRANCH_NAME}-${SHORT_SHA}|' ./kubernetes/deployments/dev/*.yaml
-          
+            --zone "europe-west1-b"  
+                    
+          DIGEST=$(gcloud container images describe gcr.io/gkebinaryattz/demo:${BRANCH_NAME}-${SHORT_SHA} --format="value(image_summary.digest)")
+
+          sed -i "s|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@$${DIGEST}|" ./kubernetes/deployments/dev/*.yaml
+                    
           kubectl get ns ${BRANCH_NAME} || kubectl create ns ${BRANCH_NAME}
           kubectl apply --namespace ${BRANCH_NAME} --recursive -f kubernetes/deployments/dev
           kubectl apply --namespace ${BRANCH_NAME} --recursive -f kubernetes/services

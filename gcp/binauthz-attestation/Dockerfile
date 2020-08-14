@@ -4,7 +4,7 @@ RUN apk update && apk upgrade --no-cache
 
 RUN gcloud components install alpha beta --quiet
 
-RUN apk add --no-cache docker gnupg bash python3
+RUN apk add --no-cache docker gnupg bash python3 jq
 
 WORKDIR /work
 ADD create_binauthz_attestation.sh /work
