@@ -30,8 +30,9 @@ IMAGE_AND_DIGEST="$(docker inspect "${args[artifact_url]}" --format='{{index .Re
 echo "$IMAGE_AND_DIGEST"
 
 RESULT="$(curl https://sonarcloud.io/api/qualitygates/project_status?projectKey=danizheleva_demo-2T-GKE-CB | jq -r .projectStatus.status)"
+EXPECTED="OK"
 
-if [$RESULT == 'OK']; then
+if [ "$RESULT" = "$EXPECTED" ]; then
 
     if [ -n "${args[pgp_key_fingerprint]}" ]; then
         if [ -z "$PGP_SECRET_KEY" ]; then
