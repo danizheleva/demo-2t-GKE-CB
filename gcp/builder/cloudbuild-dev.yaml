@@ -65,7 +65,7 @@ steps:
                     
           DIGEST=$$(gcloud container images describe gcr.io/gkebinaryattz/demo:${BRANCH_NAME}-${SHORT_SHA} --format="value(image_summary.digest)")
 
-          sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@${DIGEST}|' ./kubernetes/deployments/dev/*.yaml
+          sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@$${DIGEST}|' ./kubernetes/deployments/dev/*.yaml
 
           IMAGE_AND_DIGEST=$$(docker inspect "${args[artifact_url]}" --format='{{index .RepoDigests 0}}')
                     
