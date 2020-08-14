@@ -64,6 +64,7 @@ steps:
             --zone "europe-west1-b"  
                     
           DIGEST=$(gcloud container images describe gcr.io/gkebinaryattz/demo:${BRANCH_NAME}-${SHORT_SHA} --format="value(image_summary.digest)")
+          echo digest is $DIGEST
 
           sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@$DIGEST|' ./kubernetes/deployments/dev/*.yaml
                     
