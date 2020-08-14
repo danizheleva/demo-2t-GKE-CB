@@ -75,6 +75,8 @@ gcloud projects add-iam-policy-binding $PROJECT \
 you will be given a **project key** and an **organisation key**. Note these down.
 3. Add the project key into the ``create_binauthz_attestation.sh`` file (line 32 which has the Sonar Qube API).
 4. Build the ``binauthz-attestation:latest`` image using the ``cloudbuild.yaml`` file in this folder.
+5. Create a cluster with binary attestation or add binary attestation to your existing cluster (through GKE in the UI)
+6. Create a policy
 
 ### KMS Key-based Signing (Recommended)
 

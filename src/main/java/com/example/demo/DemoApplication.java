@@ -25,6 +25,12 @@ public class DemoApplication {
       return "Hello world";
     }
 
+
+    @GetMapping("/")
+    public String home() {
+      return "You've hit the homepage";
+    }
+
     // @GetMapping("hello/{id}")
     // public String helloFromDatabase(@PathVariable(name="id") Long id){
     //     DemoTable table = demoTableRepository.findById(id).get();
