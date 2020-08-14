@@ -76,8 +76,9 @@ you will be given a **project key** and an **organisation key**. Note these down
 3. Add the project key into the ``create_binauthz_attestation.sh`` file (line 32 which has the Sonar Qube API).
 4. Build the ``binauthz-attestation:latest`` image using the ``cloudbuild.yaml`` file in this folder.
 5. Create a cluster with binary attestation or add binary attestation to your existing cluster (through GKE in the UI)
-6. Create a binauthz attestor following [these instructions](https://cloud.google.com/binary-authorization/docs/creating-attestors-cli)
-7. Create a binauthz policy [these instructions](https://cloud.google.com/binary-authorization/docs/configuring-policy-cli)
+6. Create a signing key using KMS Key-Based Signing (details in section below)
+7. Create a binauthz attestor following [these instructions](https://cloud.google.com/binary-authorization/docs/creating-attestors-cli) using the public key created
+8. Create a binauthz policy [these instructions](https://cloud.google.com/binary-authorization/docs/configuring-policy-cli) on the kubernetes cluster
 
 ### KMS Key-based Signing (Recommended)
 
