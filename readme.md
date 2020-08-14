@@ -19,9 +19,10 @@ is not achieved, deployment is not permitted.
     - Create Attestor and attach Key
     - Create Policy and attach Attestor
     - Give Cloud Builder service account necessary access rights
-2. Create GKE cluster
+2. Configure SonarQube using the ReadMe in the ./SonarQube readme 
+3. Create GKE cluster
     - enable Binary Authorization and attach policy
-3. Configure Cloud Build  
+4. Configure Cloud Build  
 
 To set up CD follow these commands from the gcp cloud shell:
 
