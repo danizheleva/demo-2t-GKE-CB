@@ -34,7 +34,6 @@ steps:
     - '-Dsonar.branch.name=${BRANCH_NAME}'
 
 ### Attest
-
   - id: 'attest-sonarqube'
     name: 'gcr.io/$PROJECT_ID/binauthz-attestation:latest'
     args:
@@ -62,7 +61,7 @@ steps:
           
           gcloud container clusters get-credentials "$${CLUSTER}" \
             --project "$${PROJECT}" \
-            --zone "$${ZONE}"  
+            --zone "europe-west1-b"  
           
           
           sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo:${BRANCH_NAME}-${SHORT_SHA}|' ./kubernetes/deployments/dev/*.yaml
