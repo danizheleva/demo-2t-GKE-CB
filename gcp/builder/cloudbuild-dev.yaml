@@ -77,7 +77,7 @@ steps:
           echo digest2 is $${DIGEST2}
           echo digest2 is "$${DIGEST2}""
 
-          sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@"$${DIGEST}"|' ./kubernetes/deployments/dev/*.yaml
+          sed -i "s|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@$${DIGEST}|" ./kubernetes/deployments/dev/*.yaml
                     
           kubectl get ns ${BRANCH_NAME} || kubectl create ns ${BRANCH_NAME}
           kubectl apply --namespace ${BRANCH_NAME} --recursive -f kubernetes/deployments/dev
