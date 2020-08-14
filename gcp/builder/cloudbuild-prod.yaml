@@ -60,7 +60,7 @@ steps:
           PROJECT=$$(gcloud config get-value core/project)
           ZONE=$$(gcloud config get-value compute/zone)
           
-          gcloud container clusters get-credentials "private-culster" \
+          gcloud container clusters get-credentials gke-deploy-cluster-priv \
             --project "$${PROJECT}" \
             --zone "europe-west1-b"  
 
