@@ -65,6 +65,16 @@ steps:
                     
           DIGEST=$(gcloud container images describe gcr.io/gkebinaryattz/demo:${BRANCH_NAME}-${SHORT_SHA} --format="value(image_summary.digest)")
           echo digest is $DIGEST
+          echo digest is ${DIGEST}
+          echo digest is $${DIGEST}
+          echo digest is "$${DIGEST}""
+
+          DIGEST2=$$(gcloud container images describe gcr.io/gkebinaryattz/demo:${BRANCH_NAME}-${SHORT_SHA} --format="value(image_summary.digest)")
+
+          echo digest2 is $DIGEST2
+          echo digest2 is ${DIGEST2}
+          echo digest2 is $${DIGEST2}
+          echo digest2 is "$${DIGEST2}""
 
           sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@$DIGEST|' ./kubernetes/deployments/dev/*.yaml
                     
