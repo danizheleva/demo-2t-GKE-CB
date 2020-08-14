@@ -62,11 +62,12 @@ steps:
           gcloud container clusters get-credentials "$${CLUSTER}" \
             --project "$${PROJECT}" \
             --zone "europe-west1-b"  
+                    
+          DIGEST=$$(gcloud container images describe gcr.io/gkebinaryattz/demo:${BRANCH_NAME}-${SHORT_SHA} --format="value(image_summary.digest)")
+
+          sed -i 's|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@${DIGEST}|' ./kubernetes/deployments/dev/*.yaml
 
           IMAGE_AND_DIGEST=$$(docker inspect "${args[artifact_url]}" --format='{{index .RepoDigests 0}}')
-          
-          sed -i 's|gcr.io/$PROJECT_ID/demo:.*|${IMAGE_AND_DIGEST}|' ./kubernetes/deployments/dev/*.yaml
-
                     
           kubectl get ns ${BRANCH_NAME} || kubectl create ns ${BRANCH_NAME}
           kubectl apply --namespace ${BRANCH_NAME} --recursive -f kubernetes/deployments/dev
