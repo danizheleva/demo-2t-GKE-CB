@@ -6,7 +6,7 @@ to ensure the application image meets necessary requirements.
 
 ## Architecture
 
-![](./media/arch.png)
+![](./media/BinAuthz.png)
 
 #### How it works
 A Google Cloud Build Trigger is set up to monitor code pushes to this branch. When code is pushed to this branch the
