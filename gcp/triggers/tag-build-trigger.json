@@ -6,9 +6,10 @@
     "owner": "danizheleva",
     "name": "demo-2T-GKE-CB"
   },
-  "description": "Deploys to procudtion when a new tag is pushed on master",
+  "name": "Production",
+  "description": "Deploys to production when a new tag is pushed on master",
   "substitutions": {
-    "_CLOUDSDK_COMPUTE_ZONE": "us-central1-b",
+    "_CLOUDSDK_COMPUTE_ZONE": "europe-west1-b",
     "_CLOUDSDK_CONTAINER_CLUSTER": "gke-deploy-cluster"
   },
   "filename": "gcp/builder/cloudbuild-prod.yaml"

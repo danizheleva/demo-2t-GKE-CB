@@ -1,14 +1,15 @@
 {
   "github": {
     "push": {
-      "branch": "^master$"
+      "branch": "^canary$"
     },
     "owner": "danizheleva",
     "name": "demo-2T-GKE-CB"
   },
-  "description": "Deploys a canary release a new cluster",
+  "name": "Canary",
+  "description": "Deploys a canary release",
   "substitutions": {
-    "_CLOUDSDK_COMPUTE_ZONE": "us-central1-b",
+    "_CLOUDSDK_COMPUTE_ZONE": "europe-west1-b",
     "_CLOUDSDK_CONTAINER_CLUSTER": "gke-deploy-cluster"
   },
   "filename": "gcp/builder/cloudbuild-canary.yaml"
