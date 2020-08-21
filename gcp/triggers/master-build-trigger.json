@@ -1,7 +1,7 @@
 {
   "github": {
     "push": {
-      "branch": "^canary$"
+      "branch": "^master$"
     },
     "owner": "danizheleva",
     "name": "demo-2T-GKE-CB"
