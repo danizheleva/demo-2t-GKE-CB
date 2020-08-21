@@ -3,7 +3,7 @@ apiVersion: extensions/v1beta1
 metadata:
   name: demo-backend-production
 spec:
-  replicas: 1
+  replicas: 7
   template:
     metadata:
       name: backend
