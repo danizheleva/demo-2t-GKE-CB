@@ -39,9 +39,7 @@ steps:
             --project "$${PROJECT}" \
             --zone "$${ZONE}"  
 
-          DIGEST=$(gcloud container images describe gcr.io/gkebinaryattz/demo:${SHORT_SHA} --format="value(image_summary.digest)")
-
-          sed -i "s|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@$${DIGEST}|" ./kubernetes/deployments/canary/*.yaml
+          sed -i "s|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo::${SHORT_SHA} |" ./kubernetes/deployments/canary/*.yaml
                         
           kubectl apply --namespace production --recursive -f kubernetes/deployments/canary
           kubectl apply --namespace production --recursive -f kubernetes/services

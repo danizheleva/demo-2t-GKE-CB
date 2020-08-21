@@ -25,7 +25,7 @@ To set up CD follow these commands from the gcp cloud shell:
 ```
     export PROJECT=$(gcloud info --format='value(config.project)')
     export CLUSTER=gke-deploy-cluster
-    export ZONE=us-central1-a
+    export ZONE=europe-west1-b
 
     gcloud config set compute/zone $ZONE
 ```

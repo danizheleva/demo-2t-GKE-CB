@@ -22,29 +22,6 @@ steps:
       - |
           docker push gcr.io/$PROJECT_ID/demo:$TAG_NAME
 
-### Sonarqube
-  - id: 'run-sonarqube'
-    name: 'gcr.io/$PROJECT_ID/sonar-scanner:latest'
-    args:
-    - '-Dsonar.host.url=https://sonarcloud.io'
-    - '-Dsonar.login=a60eb05b0aa82e81873bb247ad77724d01bf6a2d'
-    - '-Dsonar.projectKey=danizheleva_demo-2T-GKE-CB'
-    - '-Dsonar.organization=danizheleva'
-    - '-Dsonar.sources=./src/main/java'
-    - '-Dsonar.java.binaries=./src/main/java'
-
-### Attest
-
-  - id: 'attest-sonarqube'
-    name: 'gcr.io/$PROJECT_ID/binauthz-attestation:latest'
-    args:
-      - '--artifact-url'
-      - 'gcr.io/$PROJECT_ID/demo:$TAG_NAME'
-      - '--attestor'
-      - 'projects/$PROJECT_ID/attestors/cluster-approved'
-      - '--keyversion'
-      - 'projects/gkebinaryattz/locations/global/keyRings/my-binauthz-keyring/cryptoKeys/my-binauthz-kms-key-name/cryptoKeyVersions/1'
-
 ### Deploy
   - id: 'deploy'
     name: 'gcr.io/cloud-builders/gcloud'
@@ -64,9 +41,7 @@ steps:
             --project "$${PROJECT}" \
             --zone "$${ZONE}"  
 
-          DIGEST=$(gcloud container images describe gcr.io/gkebinaryattz/demo@${TAG_NAME} --format="value(image_summary.digest)")
-
-          sed -i "s|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo@$${DIGEST}|" ./kubernetes/deployments/prod/*.yaml
+          sed -i "s|gcr.io/$PROJECT_ID/demo:.*|gcr.io/$PROJECT_ID/demo:${TAG_NAME}|" ./kubernetes/deployments/prod/*.yaml
                   
           kubectl get ns production || kubectl create ns production
           kubectl apply --namespace production --recursive -f kubernetes/deployments/prod

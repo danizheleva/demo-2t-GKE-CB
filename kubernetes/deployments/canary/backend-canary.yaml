@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: gcr.io/gkebinaryattz/demo:v1
+        image: gcr.io/devtestdb/demo:v1
         resources:
           limits:
             memory: "500Mi"
