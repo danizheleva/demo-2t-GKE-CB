@@ -24,8 +24,3 @@ spec:
           httpGet:
             path: /hello
             port: 8080
-        securityContext:
-          # The default Cloud SQL proxy image runs as the
-          # "nonroot" user and group (uid: 65532) by default.
-          runAsNonRoot: true
-      # [END cloud_sql_proxy_k8s_container]
