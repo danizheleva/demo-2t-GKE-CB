@@ -42,7 +42,7 @@ steps:
       - '--attestor'
       - 'projects/$PROJECT_ID/attestors/sonar-approved'
       - '--keyversion'
-      - 'projects/$PROJECT_ID/locations/global/keyRings/my-binauthz-keyring/cryptoKeys/my-binauthz-kms-key-name/cryptoKeyVersions/1'
+      - 'projects/$PROJECT_ID/locations/global/keyRings/my-binauthz-keyring/cryptoKeys/binauthzkey/cryptoKeyVersions/1'
 
 ### Deploy
   - id: 'deploy'
@@ -80,4 +80,4 @@ steps:
       - '--attestor'
       - 'projects/$PROJECT_ID/attestors/e2e-approved'
       - '--keyversion'
-      - 'projects/$PROJECT_ID/locations/global/keyRings/my-binauthz-keyring/cryptoKeys/my-binauthz-kms-key-name/cryptoKeyVersions/1'
+      - 'projects/$PROJECT_ID/locations/global/keyRings/my-binauthz-keyring/cryptoKeys/binauthzkey/cryptoKeyVersions/1'

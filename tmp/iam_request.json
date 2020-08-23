@@ -1,0 +1,13 @@
+{
+  "resource": "projects/devtestdb-287311/notes/my-note-id",
+  "policy": {
+    "bindings": [
+      {
+        "role": "roles/containeranalysis.notes.occurrences.viewer",
+        "members": [
+          "serviceAccount:service-1004156476367@gcp-sa-binaryauthorization.iam.gserviceaccount.com"
+        ]
+      }
+    ]
+  }
+}
