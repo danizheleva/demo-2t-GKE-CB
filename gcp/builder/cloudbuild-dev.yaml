@@ -73,11 +73,11 @@ steps:
 
 ### Attest e2e
   - id: 'attest-e2e'
-    name: 'gcr.io/$PROJECT_ID/binauthz-attestation-se2eonar:latest'
+    name: 'gcr.io/$PROJECT_ID/binauthz-attestation-e2e:latest'
     args:
       - '--artifact-url'
       - 'gcr.io/$PROJECT_ID/demo:$BRANCH_NAME-$SHORT_SHA'
       - '--attestor'
       - 'projects/$PROJECT_ID/attestors/e2e-approved'
       - '--keyversion'
-      - 'projects/$PROJECT_ID/locations/global/keyRings/my-binauthz-keyring/cryptoKeys/binauthzkey/cryptoKeyVersions/1'
+      - 'projects/$PROJECT_ID/locations/global/keyRings/my-binauthz-keyring/cryptoKeys/my-binauthz-kms-key-name/cryptoKeyVersions/1'
