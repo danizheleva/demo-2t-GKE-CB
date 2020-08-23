@@ -4,17 +4,17 @@ steps:
     args:
       - 'build'
       - '-t'
-      - 'gcr.io/$PROJECT_ID/binauthz-attestation:latest'
+      - 'gcr.io/$PROJECT_ID/binauthz-attestation-sonar:latest'
       - '.'
   - id: 'publish'
     name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - 'gcr.io/$PROJECT_ID/binauthz-attestation:latest'
+      - 'gcr.io/$PROJECT_ID/binauthz-attestation-sonar:latest'
   - id: 'run-help'
     name: 'gcr.io/cloud-builders/docker'
     args:
       - 'run'
-      - 'gcr.io/$PROJECT_ID/binauthz-attestation:latest'
+      - 'gcr.io/$PROJECT_ID/binauthz-attestation-sonar:latest'
       - '--help'
 tags: ['cloud-builders-community']
