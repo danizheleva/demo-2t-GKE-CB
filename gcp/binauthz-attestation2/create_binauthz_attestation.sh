@@ -29,6 +29,19 @@ docker pull "${args[artifact_url]}"
 IMAGE_AND_DIGEST="$(docker inspect "${args[artifact_url]}" --format='{{index .RepoDigests 0}}')"
 echo "IMAGE_AND_DIGEST: $IMAGE_AND_DIGEST"
 
+
+gcloud container clusters get-credentials gke-deploy-cluster
+
+external_ip=""; 
+while [ -z $external_ip ]; do 
+    echo "Waiting for end point..."; 
+    external_ip=$(kubectl get svc demo-backend -n binauthz2 --template="{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}"); 
+    [ -z "$external_ip" ] && sleep 10;
+done; 
+echo "End point ready-" && echo $external_ip; 
+FULL_URL = "$external_ip:8080/hello"
+curl $FULL_URL 
+
 RESULT="$(curl https://sonarcloud.io/api/qualitygates/project_status?projectKey=danizheleva_demo-2T-GKE-CB | jq -r .projectStatus.status)"
 EXPECTED="OK"
 
