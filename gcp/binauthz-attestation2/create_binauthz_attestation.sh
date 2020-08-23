@@ -42,15 +42,14 @@ echo "End point ready-" && echo $external_ip;
 FULL_URL = "$external_ip:8080/hello"
 curl $FULL_URL 
 
-RESULT="$(curl https://sonarcloud.io/api/qualitygates/project_status?projectKey=danizheleva_demo-2T-GKE-CB | jq -r .projectStatus.status)"
-EXPECTED="OK"
+RESULT="$(curl -s -w "%{http_code}\n" $FULL_URL -o /dev/null)"
+EXPECTED="200"
 
 echo $RESULT
 
 if [ "$RESULT" = "$EXPECTED" ]; then
 
     if [ -n "${args[pgp_key_fingerprint]}" ]; then
-        echo "in if statement loop"
 
         if [ -z "$PGP_SECRET_KEY" ]; then
             die "PGP_SECRET_KEY environment variable is required if providing the PGP signing key through an environment variable. Please consult the documentation for more information."
