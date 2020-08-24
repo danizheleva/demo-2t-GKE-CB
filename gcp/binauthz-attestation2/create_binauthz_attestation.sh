@@ -29,8 +29,11 @@ docker pull "${args[artifact_url]}"
 IMAGE_AND_DIGEST="$(docker inspect "${args[artifact_url]}" --format='{{index .RepoDigests 0}}')"
 echo "IMAGE_AND_DIGEST: $IMAGE_AND_DIGEST"
 
+gcloud components install kubectl
+gcloud container clusters get-credentials gke-deploy-cluster --zone=europe-west1-b
 
-gcloud container clusters get-credentials gke-deploy-cluster
+echo "Sleeping for 3 minutes to wait for pod to spin up"
+sleep 3m
 
 external_ip=""; 
 while [ -z $external_ip ]; do 
@@ -38,14 +41,13 @@ while [ -z $external_ip ]; do
     external_ip=$(kubectl get svc demo-backend -n binauthz2 --template="{{range .status.loadBalancer.ingress}}{{.ip}}{{end}}"); 
     [ -z "$external_ip" ] && sleep 10;
 done; 
-echo "End point ready-" && echo $external_ip; 
-FULL_URL = "$external_ip:8080/hello"
-curl $FULL_URL 
 
-RESULT="$(curl -s -w "%{http_code}\n" $FULL_URL -o /dev/null)"
+FULL_URL="${external_ip}:80/hello"
+echo "End point ready: $FULL_URL"
+
+RESULT=$(curl --write-out %{http_code} --silent --output /dev/null $FULL_URL)
+echo "result from curl is: $RESULT"
 EXPECTED="200"
-
-echo $RESULT
 
 if [ "$RESULT" = "$EXPECTED" ]; then
 
