@@ -1,4 +1,4 @@
-# Spring Boot GKE deployment
+# Canary Deployment on Google Kubernetes Engine 
 
 This repository holds scripts demonstrating how to use Google Cloud Build as a Continuous Deployment 
 system to deploy a SpringBoot application to GKE.
@@ -7,14 +7,26 @@ system to deploy a SpringBoot application to GKE.
 
 ![](./media/arch.png)
 
-#### How it works
-There are triggers set up within Google Cloud Build which watch the GitHub repository. When a code push activates one of
-the triggers, the relevant cloudbuild.yaml file used to submit a build to Cloud Build. This then deploys the application
-to the relevant GKE namespace.
+#### Cloud Build
 
-- Push to master --> cloudbuild-canary.yaml --> deploy a second pod to Production
-- Push a tag --> cloudbuild-production.yaml --> deploy a new production version
-- Push to a branch --> cloudbuild-dev.yaml --> deploy a new namespace
+Cloud Build is a service which executes your builds directly on the GCP platform, using a build config file. The build 
+is executed as a series of steps, with each step running in its own Docker container. Google has published a set of common 
+[open-source build steps](https://github.com/googlecloudplatform/cloud-builders) for common laguages, has a range of 
+[community-contributed steps](https://github.com/googlecloudplatform/cloud-builders-community) and also has functinality for 
+you to [create your own](https://cloud.google.com/cloud-build/docs/configuring-builds/use-community-and-custom-builders) ones.
+
+#### Cloud Build Triggers
+
+Cloud Build Triggers are set up to watch a source code repository and automatically start a build whenever a change is 
+pushed to the source code. In this example we use GitHub, but the porcess is the same for BitBucket and Google Cloud 
+Source Repositories. The trigger can be configured to build your code on any detected change or when a change meets 
+certain criteria. 
+
+In this example we are configuring 3 triggers to act as follows:
+
+- Push to master --> cloudbuild-canary.yaml --> deploy 1 pod to Production namespace
+- Push a tag --> cloudbuild-production.yaml --> deploy 7 pods to Production namespace
+- Push to a branch --> cloudbuild-dev.yaml --> deploy 1 pod to a new namespace
 
 To set up CD follow these commands from the gcp cloud shell:
 
@@ -108,34 +120,6 @@ branch name
 ```
 
 Review triggers are setup on the [Build Triggers Page](https://console.cloud.google.com/gcr/triggers) 
-
-### Create Database (WIP)
-
-> *NOTE:* Having issues connecting the database to the application pod. Issue seems to be due to Cloud SQL proxy. 
-> Application cannot build (as part of the Cloud Build step) as it cannot connect to the database.
->
-> Error Seen in Cloud Build:
-> 
->``The Application Default Credentials are not available. They are available if running in Google Compute Engine. 
-Otherwise, the environment variable GOOGLE_APPLICATION_CREDENTIALS must be defined pointing to a file defining the 
-credentials. See https://developers.google.com/accounts/docs/application-default-credentials for more information.``
-
-This demo uses a postgreSQL database running on Cloud SQL which you have to deploy. Once the app starts, 
-flyway will do the rest (create table + populate some data).
-
-Set up database: 
-```
-gcloud sql instances create <DATABASE-NAME> --tier=db-n1-standard-1 --region=us-central1
-
-gcloud sql users set-password root --host=% --instance <DATABASE-NAME> --password <PASSWORD>
-
-gcloud sql databases create <TABLE-NAME> --instance=<DATABSE-NAME>
-```
-Get your database connection name:
-
-```
-gcloud sql instances describe test-instance-inventory-management | grep connectionName
-```
 
 #### Build & Deploy of local content (optional)
 
