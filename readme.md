@@ -129,6 +129,9 @@ can access the files.
 
 Review triggers are setup on the [Build Triggers Page](https://console.cloud.google.com/gcr/triggers) 
 
+#### Update Kubernetes Scripts
+Change the project name in all kubernetes deployment scripts under `spec.containers.image` to match your project name.
+
 #### Execute
 You have now built the GKE environment and configured the triggers. Pushing code to the repository should automatically
 kick off the corresponding trigger and start a build in Cloud Build.
