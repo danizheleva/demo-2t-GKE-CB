@@ -28,39 +28,50 @@ In this example we are configuring 3 triggers to act as follows:
 - Push a tag --> cloudbuild-production.yaml --> deploy 7 pods to Production namespace
 - Push to a branch --> cloudbuild-dev.yaml --> deploy 1 pod to a new namespace
 
-To set up CD follow these commands from the gcp cloud shell:
+#### The Pipeline
 
-## Setting it up 
+![](./media/pipeline.png)
 
-### Configure GCP environment
+All 3 triggers execute a similar version of the same pipeline, only difference being that they deploy to a different GKE
+namespace. Nameley, a 'production' namespace and a 'dev' namespace. The pipleine follows 3 steps:
 
-```
-    export PROJECT=$(gcloud info --format='value(config.project)')
-    export CLUSTER=gke-deploy-cluster
-    export ZONE=europe-west1-b
+1. Build image using Dockerfile
+2. Publish image to Google Container Registry
+3. Depoloy image to Google Kubernetes Engine
 
-    gcloud config set compute/zone $ZONE
-```
 
-#### Enable Services
-```
+
+# Setting up:
+
+#### Configure GCP environment
+
+```bash
+## Configure env variables
+PROJECT=$(gcloud info --format='value(config.project)')
+CLUSTER=gke-deploy-cluster
+ZONE=europe-west1-b
+PROJECT_NUMBER="$(gcloud projects describe \
+    $(gcloud config get-value core/project -q) --format='get(projectNumber)')"
+
+gcloud config set compute/zone $ZONE
+
+## Enable API Services
 gcloud services enable container.googleapis.com --async
 gcloud services enable containerregistry.googleapis.com --async
 gcloud services enable cloudbuild.googleapis.com --async
-gcloud services enable sourcerepo.googleapis.com --async
 ```
-#### Create Container Cluster
 
-```
+#### Create GKE Container Cluster
+In this example we will be deploying to different namespaces in the same GKE cluster. 
+
+```bash
+## Create the cluster
 gcloud container clusters create ${CLUSTER} \
 --project=${PROJECT} \
 --zone=${ZONE} \
 --quiet
-```
 
-#### Get Credentials
-
-```
+#### Get Cluster Credentials
 gcloud container clusters get-credentials ${CLUSTER} \
 --project=${PROJECT} \
 --zone=${ZONE}
@@ -69,16 +80,13 @@ gcloud container clusters get-credentials ${CLUSTER} \
 #### Give Cloud Build Rights
 
 For `kubectl` commands against GKE youll need to give Cloud Build Service Account container.developer role access 
-on your clusters [details](https://github.com/GoogleCloudPlatform/cloud-builders/tree/master/kubectl).
+on your clusters [details](https://github.com/GoogleCloudPlatform/cloud-builders/tree/master/kubectl). You can do this
+in the IAM section of the GCP portal or with the following command:
 
-```
-PROJECT_NUMBER="$(gcloud projects describe \
-    $(gcloud config get-value core/project -q) --format='get(projectNumber)')"
-
+```bash
 gcloud projects add-iam-policy-binding ${PROJECT} \
     --member=serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com \
     --role=roles/container.developer
-
 ```
 
 ### Create repo mapping with Cloud Build & GitHub
@@ -93,13 +101,13 @@ are met. Here we use 3 triggers which are stored within the gcp/triggers folder.
 bellow within folder gcp/triggers. If doing from Cloud Shell you will need to pull this repo into the shell so that you 
 can access the files.
 
-1. Push to a branch - creates a new cluster within the GKE service with the cluster name matching the 
-branch name
+1. Push to a branch - creates a new cluster within the GKE service with the cluster name matching the branch name
 2. Push to master branch - Creates a canary release
 3. Push of a tag to master branch - deploys the code to production namespace in GKE
 
 > *NOTE:* Change the values under github.owner and github.name within all the trigger.json files (in /gcp folder)
-```
+
+```bash
     curl -X POST \
         https://cloudbuild.googleapis.com/v1/projects/${PROJECT}/triggers \
         -H "Content-Type: application/json" \
@@ -121,16 +129,6 @@ branch name
 
 Review triggers are setup on the [Build Triggers Page](https://console.cloud.google.com/gcr/triggers) 
 
-#### Build & Deploy of local content (optional)
-
-The following submits a build to Cloud Build and deploys the results to a user's namespace. (Note: username must consist of lower case 
-alphanumeric characters or '-', and must start and end with an alphanumeric character (e.g. 'my-name',  or '123-abc', regex used for 
-validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?'))
-
-```
-gcloud builds submit \
-    --config gcp/builder/cloudbuild-local.yaml \
-    --substitutions=_VERSION=[SOME-VERSION],_USER=$(whoami),_CLOUDSDK_COMPUTE_ZONE=${ZONE},_CLOUDSDK_CONTAINER_CLUSTER=${CLUSTER} .
-```
-
-
+#### Execute
+You have now built the GKE environment and configured the triggers. Pushing code to the repository should automatically
+kick off the corresponding trigger and start a build in Cloud Build.
